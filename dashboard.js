@@ -1,9 +1,37 @@
 document.addEventListener('DOMContentLoaded', () => {
     const apiCards = document.querySelectorAll('.api-card');
 
+    // Inicializar los ejemplos de uso y los botones de copiar
+    apiCards.forEach(card => {
+        const endpoint = card.dataset.endpoint;
+        const paramName = card.dataset.param;
+        const usageCode = card.querySelector('.usage-box code');
+        const copyBtn = card.querySelector('.copy-btn');
+
+        // Establecer el texto inicial
+        usageCode.textContent = `/api/${endpoint}?${paramName}=...`;
+
+        // Lógica para el botón de copiar
+        copyBtn.addEventListener('click', () => {
+            // Cambiar el texto inmediatamente para una respuesta visual rápida
+            copyBtn.textContent = '¡Copiado!';
+            setTimeout(() => {
+                copyBtn.textContent = 'Copiar';
+            }, 2000);
+
+            // Realizar la operación de copiado
+            navigator.clipboard.writeText(location.origin + usageCode.textContent).catch(err => {
+                console.error('Error al copiar:', err);
+                // Opcional: manejar el error visualmente si es necesario
+            });
+        });
+    });
+
+    // Lógica para los formularios
     apiCards.forEach(card => {
         const form = card.querySelector('form');
         const resultArea = card.querySelector('.result-area');
+        const usageCode = card.querySelector('.usage-box code');
 
         form.addEventListener('submit', async (event) => {
             event.preventDefault();
@@ -19,9 +47,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            resultArea.innerHTML = '<p>Cargando...</p>';
-
+            // Actualizar dinámicamente el ejemplo de uso
             const apiUrl = `/api/${endpoint}?${paramName}=${encodeURIComponent(inputValue)}`;
+            usageCode.textContent = apiUrl;
+
+            resultArea.innerHTML = '<p>Cargando...</p>';
 
             try {
                 if (responseType === 'json') {

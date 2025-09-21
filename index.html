@@ -22,7 +22,7 @@
         }
         .dashboard {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
             gap: 20px;
         }
         .api-card {
@@ -77,13 +77,47 @@
             overflow-x: auto;
             word-wrap: break-word;
         }
-        .result-area img, .result-area video {
+        .result-area img, .result-area video, .result-area audio {
             max-width: 100%;
             border-radius: 6px;
         }
         .result-area pre {
             white-space: pre-wrap;
             font-size: 0.85em;
+        }
+        .usage-area {
+            margin-top: 20px;
+            border-top: 1px solid #e9ebee;
+            padding-top: 15px;
+        }
+        .usage-area h4 {
+            margin: 0 0 10px 0;
+            font-size: 0.9em;
+            color: #606770;
+        }
+        .usage-box {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        .usage-box code {
+            flex-grow: 1;
+            background-color: #f0f2f5;
+            padding: 8px;
+            border-radius: 4px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.8em;
+            color: #333;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .copy-btn {
+            background-color: #42b72a;
+            padding: 6px 12px;
+            font-size: 0.8em;
+        }
+        .copy-btn:hover {
+            background-color: #36a420;
         }
     </style>
 </head>
@@ -94,7 +128,6 @@
     </header>
 
     <main class="dashboard">
-        <!-- Tarjetas de API se insertarán aquí -->
         <div class="api-card" data-endpoint="ytmp4" data-param="url" data-response-type="video">
             <h3>YouTube to MP4</h3>
             <p>Convierte un video de YouTube a formato MP4.</p>
@@ -103,6 +136,13 @@
                 <button type="submit">Probar</button>
             </form>
             <div class="result-area"></div>
+            <div class="usage-area">
+                <h4>Uso de la API:</h4>
+                <div class="usage-box">
+                    <code>/api/ytmp4?url=...</code>
+                    <button class="copy-btn">Copiar</button>
+                </div>
+            </div>
         </div>
         <div class="api-card" data-endpoint="ytmp3" data-param="url" data-response-type="audio">
             <h3>YouTube to MP3</h3>
@@ -112,6 +152,13 @@
                 <button type="submit">Probar</button>
             </form>
             <div class="result-area"></div>
+            <div class="usage-area">
+                <h4>Uso de la API:</h4>
+                <div class="usage-box">
+                    <code>/api/ytmp3?url=...</code>
+                    <button class="copy-btn">Copiar</button>
+                </div>
+            </div>
         </div>
         <div class="api-card" data-endpoint="tiktok" data-param="url" data-response-type="video">
             <h3>TikTok Downloader</h3>
@@ -121,6 +168,13 @@
                 <button type="submit">Probar</button>
             </form>
             <div class="result-area"></div>
+            <div class="usage-area">
+                <h4>Uso de la API:</h4>
+                <div class="usage-box">
+                    <code>/api/tiktok?url=...</code>
+                    <button class="copy-btn">Copiar</button>
+                </div>
+            </div>
         </div>
         <div class="api-card" data-endpoint="pinterest" data-param="q" data-response-type="json">
             <h3>Pinterest Search</h3>
@@ -130,6 +184,13 @@
                 <button type="submit">Probar</button>
             </form>
             <div class="result-area"></div>
+            <div class="usage-area">
+                <h4>Uso de la API:</h4>
+                <div class="usage-box">
+                    <code>/api/pinterest?q=...</code>
+                    <button class="copy-btn">Copiar</button>
+                </div>
+            </div>
         </div>
         <div class="api-card" data-endpoint="pinvid" data-param="q" data-response-type="json">
             <h3>Pinterest Video Search</h3>
@@ -139,6 +200,13 @@
                 <button type="submit">Probar</button>
             </form>
             <div class="result-area"></div>
+            <div class="usage-area">
+                <h4>Uso de la API:</h4>
+                <div class="usage-box">
+                    <code>/api/pinvid?q=...</code>
+                    <button class="copy-btn">Copiar</button>
+                </div>
+            </div>
         </div>
         <div class="api-card" data-endpoint="youtube" data-param="q" data-response-type="json">
             <h3>YouTube Search</h3>
@@ -148,6 +216,13 @@
                 <button type="submit">Probar</button>
             </form>
             <div class="result-area"></div>
+            <div class="usage-area">
+                <h4>Uso de la API:</h4>
+                <div class="usage-box">
+                    <code>/api/youtube?q=...</code>
+                    <button class="copy-btn">Copiar</button>
+                </div>
+            </div>
         </div>
         <div class="api-card" data-endpoint="hd" data-param="url" data-response-type="image">
             <h3>Image HD Enhancer</h3>
@@ -157,8 +232,14 @@
                 <button type="submit">Probar</button>
             </form>
             <div class="result-area"></div>
+            <div class="usage-area">
+                <h4>Uso de la API:</h4>
+                <div class="usage-box">
+                    <code>/api/hd?url=...</code>
+                    <button class="copy-btn">Copiar</button>
+                </div>
+            </div>
         </div>
-        <!-- Añadir más tarjetas para otras APIs si es necesario -->
     </main>
 
     <script src="dashboard.js"></script>
