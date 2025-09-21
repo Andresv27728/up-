@@ -1,6 +1,9 @@
+import { Router } from 'express';
 import fetch from 'node-fetch';
 
-export default async function handler(req, res) {
+const router = Router();
+
+async function handler(req, res) {
   const { url } = req.query;
 
   if (!url) {
@@ -22,30 +25,17 @@ export default async function handler(req, res) {
       });
     }
 
-    const result = {
-      title: json.data.title || 'Sin título',
-      author: {
-        name: json.data.author.nickname,
-        username: json.data.author.unique_id
-      },
-      thumbnail: json.data.cover,
-      duration: json.data.duration,
-      video: json.data.play, // HD sin marca
-      audio: json.data.music,
-      likes: json.data.digg_count,
-      comments: json.data.comment_count,
-      shares: json.data.share_count,
-      views: json.data.play_count
-    };
+    // Para el dashboard, queremos el video directamente
+    const videoUrl = json.data.play;
+    const videoResponse = await fetch(videoUrl);
 
-    res.status(200).json({
-      status: 200,
-      creator: 'theadonix-api.vercel.app',
-      result: {
-        creator: 'Ado ( Wirk )',
-        ...result
-      }
-    });
+    if (!videoResponse.ok) {
+        return res.status(500).json({ error: 'No se pudo descargar el video de la URL proporcionada por la API externa.' });
+    }
+
+    res.setHeader('Content-Type', videoResponse.headers.get('content-type'));
+    res.setHeader('Content-Length', videoResponse.headers.get('content-length'));
+    videoResponse.body.pipe(res);
 
   } catch (e) {
     res.status(500).json({
@@ -55,3 +45,8 @@ export default async function handler(req, res) {
     });
   }
 }
+
+router.get('/', handler);
+router.post('/', handler);
+
+export default router;
