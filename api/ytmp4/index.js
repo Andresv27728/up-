@@ -1,5 +1,9 @@
+import { Router } from 'express';
 import axios from 'axios';
 import crypto from 'crypto';
+import fetch from 'node-fetch';
+
+const router = Router();
 
 const CONFIG = {
   API_BASE: "https://api3.apiapi.lat",
@@ -223,15 +227,11 @@ const ogmp3Service = {
   }
 };
 
-export default async function handler(req, res) {
-  if (req.method !== 'GET') {
-    return res.status(405).json({ error: '❌ Método no permitido. Use GET.' });
-  }
-
+async function ytmp4ApiHandler(req, res) {
   try {
     const { url } = req.query;
     const format = req.query.format || CONFIG.DEFAULT_FMT.video;
-    const type = 'video'; // Hardcoded to video
+    const type = 'video';
 
     if (!url) {
       return res.status(400).json({ error: '❌ Falta el parámetro ?url=' });
@@ -247,19 +247,32 @@ export default async function handler(req, res) {
     const cleanTitle = title.replace(/[\\/:*?"<>|]/g, '').slice(0, 100);
     const filename = `${cleanTitle}.mp4`;
 
-    return res.status(200).json({
-      status: 200,
-      creator: 'adonix-scraper-improved',
-      result: {
-        creator: 'Ado (Wirk)',
-        title,
-        [type]: downloadLink,
-        format,
-        type,
-        filename
-      }
-    });
+    if (req.headers.accept?.includes('video/')) {
+        const mediaResponse = await fetch(downloadLink);
+        res.setHeader('Content-Type', mediaResponse.headers.get('content-type'));
+        res.setHeader('Content-Length', mediaResponse.headers.get('content-length'));
+        mediaResponse.body.pipe(res);
+    } else {
+        return res.status(200).json({
+          status: 200,
+          creator: 'adonix-scraper-improved',
+          result: {
+            creator: 'Ado (Wirk)',
+            title,
+            [type]: downloadLink,
+            format,
+            type,
+            filename
+          }
+        });
+    }
   } catch (e) {
+    console.error(`[API Handler] Error interno del servidor: ${e.message}`, e);
     return res.status(500).json({ error: '❌ Error interno del servidor.', debug: e.message });
   }
 }
+
+router.get('/', ytmp4ApiHandler);
+router.post('/', ytmp4ApiHandler);
+
+export default router;

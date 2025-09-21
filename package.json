@@ -1,5 +1,5 @@
 {
-  "name": "adonixapi",
+  "name": "yo-soy-yo-api",
   "version": "1.0.0",
   "type": "module",
   "engines": {
@@ -12,7 +12,6 @@
     "adonix-scraper": "1.2.5",
     "axios": "^1.6.8",
     "cheerio": "^1.0.0-rc.12",
-    "canvas": "^2.11.0"
     "cors": "^2.8.5",
     "express": "^4.19.2",
     "node-fetch": "^3.3.2",

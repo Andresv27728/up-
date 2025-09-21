@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yo Soy Yo API - Dashboard</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background-color: #f0f2f5;
+            color: #1c1e21;
+            margin: 0;
+            padding: 20px;
+        }
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        h1 {
+            font-size: 2.5em;
+            color: #1877f2;
+        }
+        .dashboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 20px;
+        }
+        .api-card {
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+        .api-card h3 {
+            margin-top: 0;
+            font-size: 1.2em;
+            color: #1c1e21;
+        }
+        .api-card p {
+            font-size: 0.9em;
+            color: #606770;
+            flex-grow: 1;
+        }
+        .api-card form {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        .api-card input[type="text"] {
+            flex-grow: 1;
+            border: 1px solid #dddfe2;
+            border-radius: 6px;
+            padding: 8px 12px;
+            font-size: 0.9em;
+        }
+        .api-card button {
+            background-color: #1877f2;
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            padding: 8px 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .api-card button:hover {
+            background-color: #166fe5;
+        }
+        .result-area {
+            margin-top: 15px;
+            background-color: #f7f7f7;
+            border-radius: 6px;
+            padding: 10px;
+            min-height: 50px;
+            overflow-x: auto;
+            word-wrap: break-word;
+        }
+        .result-area img, .result-area video, .result-area audio {
+            max-width: 100%;
+            border-radius: 6px;
+        }
+        .result-area pre {
+            white-space: pre-wrap;
+            font-size: 0.85em;
+        }
+        .usage-area {
+            margin-top: 20px;
+            border-top: 1px solid #e9ebee;
+            padding-top: 15px;
+        }
+        .usage-area h4 {
+            margin: 0 0 10px 0;
+            font-size: 0.9em;
+            color: #606770;
+        }
+        .usage-box {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        .usage-box code {
+            flex-grow: 1;
+            background-color: #f0f2f5;
+            padding: 8px;
+            border-radius: 4px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.8em;
+            color: #333;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .copy-btn {
+            background-color: #42b72a;
+            padding: 6px 12px;
+            font-size: 0.8em;
+        }
+        .copy-btn:hover {
+            background-color: #36a420;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Yo Soy Yo API Dashboard</h1>
+    </header>
+
+    <main class="dashboard">
+        <div class="api-card" data-endpoint="ytmp4" data-param="url" data-response-type="video">
+            <h3>YouTube to MP4</h3>
+            <p>Convierte un video de YouTube a formato MP4.</p>
+            <form>
+                <input type="text" placeholder="URL de YouTube" required>
+                <button type="submit">Probar</button>
+            </form>
+            <div class="result-area"></div>
+            <div class="usage-area">
+                <h4>Uso de la API:</h4>
+                <div class="usage-box">
+                    <code>/api/ytmp4?url=...</code>
+                    <button class="copy-btn">Copiar</button>
+                </div>
+            </div>
+        </div>
+        <div class="api-card" data-endpoint="ytmp3" data-param="url" data-response-type="audio">
+            <h3>YouTube to MP3</h3>
+            <p>Convierte un video de YouTube a formato MP3.</p>
+            <form>
+                <input type="text" placeholder="URL de YouTube" required>
+                <button type="submit">Probar</button>
+            </form>
+            <div class="result-area"></div>
+            <div class="usage-area">
+                <h4>Uso de la API:</h4>
+                <div class="usage-box">
+                    <code>/api/ytmp3?url=...</code>
+                    <button class="copy-btn">Copiar</button>
+                </div>
+            </div>
+        </div>
+        <div class="api-card" data-endpoint="tiktok" data-param="url" data-response-type="video">
+            <h3>TikTok Downloader</h3>
+            <p>Descarga un video de TikTok sin marca de agua.</p>
+            <form>
+                <input type="text" placeholder="URL de TikTok" required>
+                <button type="submit">Probar</button>
+            </form>
+            <div class="result-area"></div>
+            <div class="usage-area">
+                <h4>Uso de la API:</h4>
+                <div class="usage-box">
+                    <code>/api/tiktok?url=...</code>
+                    <button class="copy-btn">Copiar</button>
+                </div>
+            </div>
+        </div>
+        <div class="api-card" data-endpoint="pinterest" data-param="q" data-response-type="json">
+            <h3>Pinterest Search</h3>
+            <p>Busca imágenes en Pinterest.</p>
+            <form>
+                <input type="text" placeholder="Término de búsqueda" required>
+                <button type="submit">Probar</button>
+            </form>
+            <div class="result-area"></div>
+            <div class="usage-area">
+                <h4>Uso de la API:</h4>
+                <div class="usage-box">
+                    <code>/api/pinterest?q=...</code>
+                    <button class="copy-btn">Copiar</button>
+                </div>
+            </div>
+        </div>
+        <div class="api-card" data-endpoint="pinvid" data-param="q" data-response-type="json">
+            <h3>Pinterest Video Search</h3>
+            <p>Busca videos en Pinterest.</p>
+            <form>
+                <input type="text" placeholder="Término de búsqueda" required>
+                <button type="submit">Probar</button>
+            </form>
+            <div class="result-area"></div>
+            <div class="usage-area">
+                <h4>Uso de la API:</h4>
+                <div class="usage-box">
+                    <code>/api/pinvid?q=...</code>
+                    <button class="copy-btn">Copiar</button>
+                </div>
+            </div>
+        </div>
+        <div class="api-card" data-endpoint="youtube" data-param="q" data-response-type="json">
+            <h3>YouTube Search</h3>
+            <p>Busca videos en YouTube.</p>
+            <form>
+                <input type="text" placeholder="Término de búsqueda" required>
+                <button type="submit">Probar</button>
+            </form>
+            <div class="result-area"></div>
+            <div class="usage-area">
+                <h4>Uso de la API:</h4>
+                <div class="usage-box">
+                    <code>/api/youtube?q=...</code>
+                    <button class="copy-btn">Copiar</button>
+                </div>
+            </div>
+        </div>
+        <div class="api-card" data-endpoint="hd" data-param="url" data-response-type="image">
+            <h3>Image HD Enhancer</h3>
+            <p>Mejora la calidad de una imagen.</p>
+            <form>
+                <input type="text" placeholder="URL de la imagen" required>
+                <button type="submit">Probar</button>
+            </form>
+            <div class="result-area"></div>
+            <div class="usage-area">
+                <h4>Uso de la API:</h4>
+                <div class="usage-box">
+                    <code>/api/hd?url=...</code>
+                    <button class="copy-btn">Copiar</button>
+                </div>
+            </div>
+        </div>
+         <div class="api-card" data-endpoint="adonix" data-param="q" data-response-type="json">
+            <h3>Adonix</h3>
+            <p>Habla con Adonix IA.</p>
+            <form>
+                <input type="text" placeholder="Pregunta" required>
+                <button type="submit">Probar</button>
+            </form>
+            <div class="result-area"></div>
+            <div class="usage-area">
+                <h4>Uso de la API:</h4>
+                <div class="usage-box">
+                    <code>/api/adonix?q=...</code>
+                    <button class="copy-btn">Copiar</button>
+                </div>
+            </div>
+        </div>
+        <div class="api-card" data-endpoint="adonixvoz" data-param="q" data-response-type="json">
+            <h3>Adonix Voz</h3>
+            <p>Habla con Adonix IA y recibe un audio.</p>
+            <form>
+                <input type="text" placeholder="Pregunta" required>
+                <button type="submit">Probar</button>
+            </form>
+            <div class="result-area"></div>
+            <div class="usage-area">
+                <h4>Uso de la API:</h4>
+                <div class="usage-box">
+                    <code>/api/adonixvoz?q=...</code>
+                    <button class="copy-btn">Copiar</button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="dashboard.js"></script>
+</body>
+</html>
