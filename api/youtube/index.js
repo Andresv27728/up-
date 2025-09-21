@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import axios from 'axios';
 import crypto from 'crypto';
+import ytSearch from 'yt-search';
 
 const router = Router();
 
