@@ -1,4 +1,4 @@
-# Adonix API
+# Yo Soy Yo API
 
 Esta es una API simple creada con Node.js y Express. Puede ser desplegada en plataformas como Vercel o Render.
 
