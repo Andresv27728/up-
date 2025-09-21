@@ -1,8 +1,5 @@
-import { Router } from 'express';
 import axios from 'axios';
 import crypto from 'crypto';
-
-const router = Router();
 
 const CONFIG = {
   API_BASE: "https://api3.apiapi.lat",
@@ -25,7 +22,7 @@ const CONFIG = {
   },
   DEFAULT_FMT: {
     video: '720',
-    audio: '320'
+    audio: '320' // Calidad de audio máxima por defecto
   },
   RESTRICTED_TIMEZONES: new Set(["-330", "-420", "-480", "-540"]),
   MAX_RETRY_ATTEMPTS: 300,
@@ -35,6 +32,7 @@ const CONFIG = {
 
 const utils = {
   hash: () => crypto.randomBytes(16).toString('hex'),
+
   encoded: (str) => {
     let result = "";
     for (let i = 0; i < str.length; i++) {
@@ -42,6 +40,7 @@ const utils = {
     }
     return result;
   },
+
   enc_url: (url, separator = ",") => {
     const codes = [];
     for (let i = 0; i < url.length; i++) {
@@ -49,6 +48,7 @@ const utils = {
     }
     return codes.join(separator).split(separator).reverse().join(separator);
   },
+
   isUrl: str => {
     try {
       const url = new URL(str);
@@ -59,6 +59,7 @@ const utils = {
       return false;
     }
   },
+
   youtube: url => {
     if (!url) return null;
     const regexes = [
@@ -73,6 +74,7 @@ const utils = {
     }
     return null;
   },
+
   sleep: (ms) => new Promise(resolve => setTimeout(resolve, ms))
 };
 
@@ -86,10 +88,12 @@ const ogmp3Service = {
   default_fmt: CONFIG.DEFAULT_FMT,
   restrictedTimezones: CONFIG.RESTRICTED_TIMEZONES,
   utils: utils,
+
   request: async (endpoint, data = {}, method = 'post') => {
     try {
       const base = CONFIG.API_ENDPOINTS[Math.floor(Math.random() * CONFIG.API_ENDPOINTS.length)];
       const url = endpoint.startsWith('http') ? endpoint : `${base}${endpoint}`;
+
       const res = await axios({
         method,
         url,
@@ -97,10 +101,12 @@ const ogmp3Service = {
         headers: CONFIG.HEADERS,
         timeout: 15000
       });
+
       return { status: true, code: res.status, data: res.data };
     } catch (error) {
       let statusCode = 500;
       let errorMessage = error.message;
+
       if (error.response) {
         statusCode = error.response.status;
         errorMessage = `HTTP ${statusCode}: ${error.response.data?.message || error.response.statusText || 'Error desconocido del servidor'}`;
@@ -111,6 +117,7 @@ const ogmp3Service = {
       return { status: false, code: statusCode, error: errorMessage };
     }
   },
+
   checkStatus: async function (id) {
     try {
       const c = this.utils.hash();
@@ -122,19 +129,24 @@ const ogmp3Service = {
       return { status: false, code: 500, error: error.message };
     }
   },
+
   checkProgress: async function (data) {
     let attempts = 0;
     let currentDelay = CONFIG.RETRY_DELAY_MS;
     while (attempts < CONFIG.MAX_RETRY_ATTEMPTS) {
       attempts++;
       const res = await this.checkStatus(data.i);
+
       if (!res.status) {
         await this.utils.sleep(currentDelay);
         currentDelay *= 1.5;
         continue;
       }
+
       const stat = res.data;
-      if (stat.s === "C") return stat;
+      if (stat.s === "C") {
+        return stat;
+      }
       if (stat.s === "P") {
         await this.utils.sleep(currentDelay);
         currentDelay *= 1.5;
@@ -144,12 +156,17 @@ const ogmp3Service = {
     }
     return null;
   },
+
   download: async function (link, format, type = 'audio') {
     if (!link) return { status: false, code: 400, error: "❌ Falta el link." };
     if (!this.utils.isUrl(link)) return { status: false, code: 400, error: "❌ Link de YouTube no válido." };
     if (type !== 'video' && type !== 'audio') return { status: false, code: 400, error: "❌ Tipo inválido. Debe ser 'video' o 'audio'." };
 
-    let selectedFormat = format || (type === 'audio' ? this.default_fmt.audio : this.default_fmt.video);
+    let selectedFormat = format;
+    if (!selectedFormat) {
+      selectedFormat = type === 'audio' ? this.default_fmt.audio : this.default_fmt.video;
+    }
+
     const validFormats = type === 'audio' ? this.formats.audio : this.formats.video;
     if (!validFormats.includes(selectedFormat)) {
       return { status: false, code: 400, error: `❌ Formato '${selectedFormat}' inválido para ${type}. Opciones: ${validFormats.join(', ')}` };
@@ -162,18 +179,23 @@ const ogmp3Service = {
     while (retries < CONFIG.MAX_DOWNLOAD_RETRIES) {
       retries++;
       let currentDelay = CONFIG.RETRY_DELAY_MS;
+
       const c = this.utils.hash();
       const d = this.utils.hash();
+
       const currentTimezoneOffset = new Date().getTimezoneOffset().toString();
-      const userTimeZone = CONFIG.RESTRICTED_TIMEZONES.has(currentTimezoneOffset) ? '0' : currentTimezoneOffset;
+      // const fakeTimezoneOffset = '0';
+      // const userTimeZone = CONFIG.RESTRICTED_TIMEZONES.has(currentTimezoneOffset) ? fakeTimezoneOffset : currentTimezoneOffset;
+
       const reqPayload = {
         data: this.utils.encoded(link),
         format: type === 'audio' ? "0" : "1",
         referer: "https://ogmp3.cc",
         mp3Quality: type === 'audio' ? selectedFormat : null,
         mp4Quality: type === 'video' ? selectedFormat : null,
-        userTimeZone: userTimeZone
+        userTimeZone: currentTimezoneOffset
       };
+
       const res = await this.request(`/${c}/init/${this.utils.enc_url(link)}/${d}/`, reqPayload);
 
       if (!res.status) {
@@ -184,6 +206,7 @@ const ogmp3Service = {
       }
 
       const data = res.data;
+
       if (data.le) return { status: false, code: 400, error: "⏱️ Video muy largo (máximo 3 horas)." };
       if (data.i === "blacklisted") return { status: false, code: 429, error: "🚫 Límite diario de conversiones alcanzado." };
       if (data.e || data.i === "invalid") return { status: false, code: 400, error: "📛 Video borrado o restringido." };
@@ -226,11 +249,16 @@ const ogmp3Service = {
   }
 };
 
-async function ytmp3ApiHandler(req, res) {
+export default async function handler(req, res) {
+  if (req.method !== 'GET') {
+    return res.status(405).json({ error: '❌ Método no permitido. Use GET.' });
+  }
+
   try {
     const { url } = req.query;
+    // Establecer la calidad de audio máxima por defecto '320'
     const format = req.query.format || CONFIG.DEFAULT_FMT.audio;
-    const type = 'audio';
+    const type = req.query.type || 'audio';
 
     if (!url) {
       return res.status(400).json({ error: '❌ Falta el parámetro ?url=' });
@@ -243,36 +271,23 @@ async function ytmp3ApiHandler(req, res) {
     }
 
     const { title, download: downloadLink } = result.result;
-    const cleanTitle = title.replace(/[\\/:*?"<>|]/g, '').slice(0, 100);
-    const filename = `${cleanTitle}.mp3`;
 
-    // Para el dashboard, si se pide un stream, hacer proxy
-    if (req.headers.accept?.includes('audio/')) {
-        const mediaResponse = await fetch(downloadLink);
-        res.setHeader('Content-Type', mediaResponse.headers.get('content-type'));
-        res.setHeader('Content-Length', mediaResponse.headers.get('content-length'));
-        mediaResponse.body.pipe(res);
-    } else {
-        return res.status(200).json({
-          status: 200,
-          creator: 'adonix-scraper-improved',
-          result: {
-            creator: 'Ado (Wirk)',
-            title,
-            [type]: downloadLink,
-            format,
-            type,
-            filename
-          }
-        });
-    }
+    const cleanTitle = title.replace(/[\\/:*?"<>|]/g, '').slice(0, 100);
+    const filename = `${cleanTitle}.${type === 'audio' ? 'mp3' : 'mp4'}`;
+
+    return res.status(200).json({
+      status: 200,
+      creator: 'adonix-scraper-improved',
+      result: {
+        creator: 'Ado (Wirk)',
+        title,
+        [type]: downloadLink,
+        format,
+        type,
+        filename
+      }
+    });
   } catch (e) {
-    console.error(`[API Handler] Error interno del servidor: ${e.message}`, e);
     return res.status(500).json({ error: '❌ Error interno del servidor.', debug: e.message });
   }
 }
-
-router.get('/', ytmp3ApiHandler);
-router.post('/', ytmp3ApiHandler);
-
-export default router;

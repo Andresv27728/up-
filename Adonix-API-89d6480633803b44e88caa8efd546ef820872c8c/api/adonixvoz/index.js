@@ -1,9 +1,7 @@
-import { Router } from 'express';
+// 🚀 Adonix IA SOLO AUDIO v4: siempre voz, imagen si lo piden
 import fetch from 'node-fetch';
 
-const router = Router();
-
-async function handler(req, res) {
+export default async function handler(req, res) {
   const question = req.query.q || req.body?.q;
 
   if (!question) {
@@ -100,8 +98,3 @@ Ahora respondé esto como el bot más cabrón, sarcástico y sabrosón de intern
     });
   }
 }
-
-router.get('/', handler);
-router.post('/', handler);
-
-export default router;

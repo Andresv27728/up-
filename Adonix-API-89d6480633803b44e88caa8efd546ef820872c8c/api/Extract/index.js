@@ -1,9 +1,6 @@
-import { Router } from 'express';
 import fetch from 'node-fetch';
 
-const router = Router();
-
-async function handler(req, res) {
+export default async function handler(req, res) {
   const url = req.query.url || req.body?.url;
 
   if (!url) {
@@ -43,8 +40,3 @@ async function handler(req, res) {
     });
   }
 }
-
-router.get('/', handler);
-router.post('/', handler);
-
-export default router;

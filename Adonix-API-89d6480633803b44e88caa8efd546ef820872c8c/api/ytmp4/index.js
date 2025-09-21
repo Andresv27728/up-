@@ -1,9 +1,5 @@
-import { Router } from 'express';
 import axios from 'axios';
 import crypto from 'crypto';
-import ytSearch from 'yt-search';
-
-const router = Router();
 
 const CONFIG = {
   API_BASE: "https://api3.apiapi.lat",
@@ -17,7 +13,7 @@ const CONFIG = {
     'content-type': 'application/json',
     'origin': 'https://ogmp3.lat',
     'referer': 'https://ogmp3.lat/',
-    'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36',
+    'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36',
     'accept': 'application/json, text/plain, */*'
   },
   FORMATS: {
@@ -25,7 +21,7 @@ const CONFIG = {
     audio: ['64', '96', '192', '256', '320']
   },
   DEFAULT_FMT: {
-    video: '1080',
+    video: '720', // Calidad de video por defecto
     audio: '320'
   },
   RESTRICTED_TIMEZONES: new Set(["-330", "-420", "-480", "-540"]),
@@ -145,7 +141,7 @@ const ogmp3Service = {
     }
     return null;
   },
-  download: async function (link, format, type = 'audio') {
+  download: async function (link, format, type = 'video') { // Default to video
     if (!link) return { status: false, code: 400, error: "❌ Falta el link." };
     if (!this.utils.isUrl(link)) return { status: false, code: 400, error: "❌ Link de YouTube no válido." };
     if (type !== 'video' && type !== 'audio') return { status: false, code: 400, error: "❌ Tipo inválido. Debe ser 'video' o 'audio'." };
@@ -227,46 +223,21 @@ const ogmp3Service = {
   }
 };
 
-async function youtubeApiHandler(req, res) {
+export default async function handler(req, res) {
+  if (req.method !== 'GET') {
+    return res.status(405).json({ error: '❌ Método no permitido. Use GET.' });
+  }
+
   try {
-    const { url, q } = req.query; // Aceptar 'q' como alias de 'url'
-    const query = url || q;
-    const type = req.query.type || 'audio';
-    let format;
+    const { url } = req.query;
+    const format = req.query.format || CONFIG.DEFAULT_FMT.video;
+    const type = 'video'; // Hardcoded to video
 
-    if (type === 'video') {
-      format = req.query.format || CONFIG.DEFAULT_FMT.video;
-    } else {
-      format = req.query.format || CONFIG.DEFAULT_FMT.audio;
+    if (!url) {
+      return res.status(400).json({ error: '❌ Falta el parámetro ?url=' });
     }
 
-    if (!query) {
-      return res.status(400).json({ error: '❌ Falta el parámetro ?url= o ?q=' });
-    }
-
-    // Si no es una URL, buscar en YouTube
-    if (!utils.isUrl(query)) {
-        const searchResults = await ytSearch(query);
-        if (!searchResults.videos.length) {
-            return res.status(404).json({ error: '❌ No se encontraron videos para esa búsqueda.' });
-        }
-        // Devolver los resultados de la búsqueda
-        return res.status(200).json({
-            status: 200,
-            creator: 'adonix-scraper-improved',
-            results: searchResults.videos.slice(0, 10).map(v => ({
-                title: v.title,
-                url: v.url,
-                thumbnail: v.thumbnail,
-                duration: v.timestamp,
-                views: v.views
-            }))
-        });
-    }
-
-
-    // Si es una URL, proceder con la descarga
-    const result = await ogmp3Service.download(query, format, type);
+    const result = await ogmp3Service.download(url, format, type);
 
     if (!result.status) {
       return res.status(result.code || 500).json({ error: result.error || '❌ Falló la descarga o la conversión.' });
@@ -274,35 +245,21 @@ async function youtubeApiHandler(req, res) {
 
     const { title, download: downloadLink } = result.result;
     const cleanTitle = title.replace(/[\\/:*?"<>|]/g, '').slice(0, 100);
-    const filename = `${cleanTitle}.${type === 'audio' ? 'mp3' : 'mp4'}`;
+    const filename = `${cleanTitle}.mp4`;
 
-    // Para el dashboard, si se pide un stream, redirigir o hacer proxy
-    if (req.headers.accept?.includes('video/') || req.headers.accept?.includes('audio/')) {
-        const mediaResponse = await fetch(downloadLink);
-        res.setHeader('Content-Type', mediaResponse.headers.get('content-type'));
-        res.setHeader('Content-Length', mediaResponse.headers.get('content-length'));
-        mediaResponse.body.pipe(res);
-    } else {
-        return res.status(200).json({
-          status: 200,
-          creator: 'adonix-scraper-improved',
-          result: {
-            creator: 'Ado (Wirk)',
-            title,
-            [type]: downloadLink,
-            format,
-            type,
-            filename
-          }
-        });
-    }
+    return res.status(200).json({
+      status: 200,
+      creator: 'adonix-scraper-improved',
+      result: {
+        creator: 'Ado (Wirk)',
+        title,
+        [type]: downloadLink,
+        format,
+        type,
+        filename
+      }
+    });
   } catch (e) {
-    console.error(`[API Handler] Error interno del servidor: ${e.message}`, e);
     return res.status(500).json({ error: '❌ Error interno del servidor.', debug: e.message });
   }
 }
-
-router.get('/', youtubeApiHandler);
-router.post('/', youtubeApiHandler);
-
-export default router;
